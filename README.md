@@ -3,7 +3,7 @@
 ## 🌱Members
 
 
-| image1 | image2 | image3 | image4 |  |
+| image1 | image2 | image3 | image4 | image5 |
 | --- | --- | --- | --- | --- |
 | [서가은](https://github.com/gaeun0112) | [서보성](https://github.com/Seoboseong) | [오원택](https://github.com/dnjdsxor21) | [이승우](https://github.com/OLAOOT) | [정효정](https://github.com/HYOJUNG08) |
 
@@ -24,7 +24,7 @@
 
 Test 데이터의 입력에 대한 결과 값들의 피어슨 상관 계수(Pearson Correlation Coefficient)
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/c02b4c09-bd52-4ead-8e91-9b9073fe5cf1/Untitled.png)
+![Untitled](https://www.simplilearn.com/ice9/free_resources_article_thumb/Pearson_Correlation_2.png
 
 ### 📂Structure
 
