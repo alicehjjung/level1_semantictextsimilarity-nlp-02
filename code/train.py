@@ -17,7 +17,7 @@ from module.preprocessing import drop_marks, check_spell
 from module.seed import seed_everything
 from module.augmentation import augment
 from module.rdrop import r_augment
-from module.freeze_params import freezing, dropout_change
+from module.model_params import freezing, dropout_change
 from torch import nn
 from sklearn.model_selection import KFold
 
