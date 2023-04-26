@@ -388,6 +388,7 @@ class Model(pl.LightningModule):
         do_rdrop (int): Pretrained Bert 계열 model에 linear layer를 붙인 뒤 r-drop을 적용하는 model을 선택
         do_param_freeze (int): Pretrained Bert 계열 model의 parameter를 freeze하는지 여부
         do_sbert (int): SBert를 사용하는지 여부
+        do_label_smoothing (int): label smoothing을 사용하는지 여부
         drop_out_prob (float, default=0.1): dropout의 probability
         plm (BertModel, RobertaModel, ElectraModel): 불러온 Pretrained model
         lstm (LSTM): LSTM 모델
@@ -407,7 +408,7 @@ class Model(pl.LightningModule):
         lr_lambda: 
         configure_optimizer: 
     """
-    def __init__(self, model_name, lr, max_epoch, do_lstm, do_rdrop, do_param_freeze, do_sbert, drop_out_prob=0.1, remain_params=[], hidden_size=256):
+    def __init__(self, model_name, lr, max_epoch, do_lstm, do_rdrop, do_param_freeze, do_sbert, do_label_smoothing, drop_out_prob=0.1, remain_params=[], hidden_size=256):
         """
         Model Class 초기화 함수
 
@@ -419,6 +420,7 @@ class Model(pl.LightningModule):
             do_rdrop (int): Pretrained Bert 계열 model에 linear layer를 붙인 뒤 r-drop을 적용하는 model을 선택
             do_param_freeze (int): Pretrained Bert 계열 model의 parameter를 freeze하는지 여부
             do_sbert (int): SBert를 사용하는지 여부
+            do_label_smoothing (int): label smoothing을 사용하는지 여부
             drop_out_prob (float, default=0.1): dropout의 probability
             remain_params (list, default=[]): model의 parameter들 중 학습을 진행할 parameter를 설정
         """
@@ -432,6 +434,7 @@ class Model(pl.LightningModule):
         self.do_rdrop = do_rdrop
         self.do_param_freeze = do_param_freeze
         self.do_sbert = do_sbert
+        self.do_label_smoothing = do_label_smoothing
         self.drop_out_prob = drop_out_prob
 
         if self.do_lstm:
@@ -526,6 +529,7 @@ class Model(pl.LightningModule):
             loss_kl = nn.functional.kl_div(nn.functional.softmax(logits1, dim=1), nn.functional.softmax(logits2, dim=1), reduction="batchmean")
         
             loss = loss_kl + 0.5 * loss_rmse1 + 0.5 * loss_rmse2
+            
         elif self.do_sbert:
             x1, x2 = x[:, 0], x[:, 1]
             attention_mask1, attention_mask2 = attention_mask[:, 0], attention_mask[:, 1]
@@ -537,7 +541,18 @@ class Model(pl.LightningModule):
             cos_score_transformation = torch.nn.Identity()
             logits = cos_score_transformation(torch.cosine_similarity(logits1, logits2)) * 2.5 + 2.5
 
-            loss = self.loss_func(logits.view(-1,1), y)
+            loss = self.loss_func(logits.view(-1, 1), y)
+            
+        elif self.do_label_smoothing:
+            logits = self(x, attention_mask, token_type_ids)
+            labels = y.unsqueeze(1).to(torch.device("cuda:0"))
+            
+            smoothed_labels = ((1 - self.label_smoothing) * labels) + (self.label_smoothing / labels.shape[1])
+            std_dev = torch.sqrt(torch.tensor(0.1, device=torch.device('cuda')))
+            dist = torch.distributions.normal.Normal(logits, std_dev)
+            log_probs = dist.log_prob(smoothed_labels).sum(dim=1)
+            loss = -log_probs.mean()
+            
         else:
             logits = self(x, attention_mask, token_type_ids)
             loss = self.loss_func(logits, y.float())
@@ -571,6 +586,17 @@ class Model(pl.LightningModule):
             logits = cos_score_transformation(torch.cosine_similarity(logits1, logits2)) * 2.5 + 2.5
 
             loss = self.loss_func(logits.view(-1,1), y)
+            
+        elif self.do_label_smoothing:
+            logits = self(x, attention_mask, token_type_ids)
+            labels = y.unsqueeze(1).to(torch.device("cuda:0"))
+            
+            smoothed_labels = ((1 - self.label_smoothing) * labels) + (self.label_smoothing / labels.shape[1])
+            std_dev = torch.sqrt(torch.tensor(0.1, device=torch.device('cuda')))
+            dist = torch.distributions.normal.Normal(logits, std_dev)
+            log_probs = dist.log_prob(smoothed_labels).sum(dim=1)
+            loss = -log_probs.mean()
+            
         else:
             logits = self(x, attention_mask, token_type_ids)
             loss = self.loss_func(logits, y.float())
@@ -695,6 +721,7 @@ if __name__ == '__main__':
     parser.add_argument('--rdrop', default=0, type=int)
     parser.add_argument('--param_freeze', default=0, type=int)
     parser.add_argument('--sbert', default=0, type=int)
+    parser.add_argument('--label_smoothing', default=0, type=int)
     parser.add_argument('--kfold', default=0, type=int)
     parser.add_argument('--nums_fold', default=5, type=int)
     parser.add_argument('--dropout_prob', default=0.1, type=int)
@@ -711,7 +738,7 @@ if __name__ == '__main__':
             dataloader = Dataloader(args.model_name, args.batch_size, args.shuffle, args.train_path, args.dev_path,
                             args.test_path, args.predict_path, args.drop_marks, args.check_spell, args.sampler, args.augmentation, args.rdrop, args.sbert, args.kfold, args.seed, args.max_length)
             # TRAIN 
-            model = Model(args.model_name, args.learning_rate, args.max_epoch, args.lstm, args.rdrop, args.param_freeze, args.sbert, args.dropout_prob, args.remain_params)
+            model = Model(args.model_name, args.learning_rate, args.max_epoch, args.lstm, args.rdrop, args.param_freeze, args.sbert, args.label_smoothing, args.dropout_prob, args.remain_params)
     
             today = datetime.now(tz=timezone(timedelta(hours=9))).strftime('%Y%m%d_%H:%M')
             wandb_logger = WandbLogger(project="Final", name=f'{today}')
@@ -731,7 +758,7 @@ if __name__ == '__main__':
         dataloader = Dataloader(args.model_name, args.batch_size, args.shuffle, args.train_path, args.dev_path,
                             args.test_path, args.predict_path, args.drop_marks, args.check_spell, args.sampler, args.augmentation, args.rdrop, args.sbert, args.kfold, args.seed, args.max_length)
         # TRAIN 
-        model = Model(args.model_name, args.learning_rate, args.max_epoch, args.lstm, args.rdrop, args.param_freeze, args.sbert, args.dropout_prob, args.remain_params)
+        model = Model(args.model_name, args.learning_rate, args.max_epoch, args.lstm, args.rdrop, args.param_freeze, args.sbert, args.label_smoothing, args.dropout_prob, args.remain_params)
     
         today = datetime.now(tz=timezone(timedelta(hours=9))).strftime('%Y%m%d_%H:%M')
         wandb_logger = WandbLogger(project="Final", name=f'{today}')
