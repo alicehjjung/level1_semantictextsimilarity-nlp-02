@@ -72,7 +72,9 @@ root/
 - Dropout & L2 Regularization
 - Model Ensemble
 
-- [Wrap-Up Report](https://github.com/boostcampaitech5/level1_semantictextsimilarity-nlp-02/blob/main/wrap_up_report/%EB%AC%B8%EC%9E%A5%20%EA%B0%84%20%EC%9C%A0%EC%82%AC%EB%8F%84%20%EC%B8%A1%EC%A0%95_NLP_%ED%8C%80%20%EB%A6%AC%ED%8F%AC%ED%8A%B8(02).pdf)
+### Wrap-Up Report
+
+- [살펴보기](https://github.com/boostcampaitech5/level1_semantictextsimilarity-nlp-02/blob/main/wrap_up_report/%EB%AC%B8%EC%9E%A5%20%EA%B0%84%20%EC%9C%A0%EC%82%AC%EB%8F%84%20%EC%B8%A1%EC%A0%95_NLP_%ED%8C%80%20%EB%A6%AC%ED%8F%AC%ED%8A%B8(02).pdf)
 
 ## 🐞Usage
 
