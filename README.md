@@ -3,7 +3,7 @@
 ## 🌱Members
 
 
-| image1 | image2 | image3 | image4 | image5 |
+|<img src='https://avatars.githubusercontent.com/u/85860941?v=4' height=80 width=80px></img>|<img src='https://avatars.githubusercontent.com/u/28584259?v=4' height=80 width=80px></img>|<img src='https://avatars.githubusercontent.com/u/75467530?v=4' height=80 width=80px></img>|<img src='https://avatars.githubusercontent.com/u/60664644?v=4' height=80 width=80px></img>|<img src='https://avatars.githubusercontent.com/u/101383752?v=4' height=80 width=80px></img>|
 | --- | --- | --- | --- | --- |
 | [서가은](https://github.com/gaeun0112) | [서보성](https://github.com/Seoboseong) | [오원택](https://github.com/dnjdsxor21) | [이승우](https://github.com/OLAOOT) | [정효정](https://github.com/HYOJUNG08) |
 
@@ -24,7 +24,7 @@
 
 Test 데이터의 입력에 대한 결과 값들의 피어슨 상관 계수(Pearson Correlation Coefficient)
 
-![Untitled](https://www.simplilearn.com/ice9/free_resources_article_thumb/Pearson_Correlation_2.png
+![Untitled](https://www.simplilearn.com/ice9/free_resources_article_thumb/Pearson_Correlation_2.png)
 
 ### 📂Structure
 
