@@ -1,0 +1,8 @@
+method: grid
+parameters:
+  lr:
+    values: [0.00003]
+
+metric:
+  name: val_pearson
+  goal: maximize
