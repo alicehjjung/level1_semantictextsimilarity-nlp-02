@@ -3,7 +3,7 @@
 ## 🌱Members
 
 
-|<img src='https://avatars.githubusercontent.com/u/85860941?v=4' height=80 width=80px></img>|<img src='https://avatars.githubusercontent.com/u/28584259?v=4' height=80 width=80px></img>|<img src='https://avatars.githubusercontent.com/u/75467530?v=4' height=80 width=80px></img>|<img src='https://avatars.githubusercontent.com/u/60664644?v=4' height=80 width=80px></img>|<img src='https://avatars.githubusercontent.com/u/101383752?v=4' height=80 width=80px></img>|
+|<img src='https://avatars.githubusercontent.com/u/85860941?v=4' height=100 width=100px></img>|<img src='https://avatars.githubusercontent.com/u/28584259?v=4' height=100 width=100px></img>|<img src='https://avatars.githubusercontent.com/u/75467530?v=4' height=100 width=100px></img>|<img src='https://avatars.githubusercontent.com/u/60664644?v=4' height=100 width=100px></img>|<img src='https://avatars.githubusercontent.com/u/101383752?v=4' height=100 width=100px></img>|
 | --- | --- | --- | --- | --- |
 | [서가은](https://github.com/gaeun0112) | [서보성](https://github.com/Seoboseong) | [오원택](https://github.com/dnjdsxor21) | [이승우](https://github.com/OLAOOT) | [정효정](https://github.com/HYOJUNG08) |
 
@@ -24,7 +24,7 @@
 
 Test 데이터의 입력에 대한 결과 값들의 피어슨 상관 계수(Pearson Correlation Coefficient)
 
-![Untitled](https://www.simplilearn.com/ice9/free_resources_article_thumb/Pearson_Correlation_2.png)
+![Pearson](https://www.simplilearn.com/ice9/free_resources_article_thumb/Pearson_Correlation_2.png)
 
 ### 📂Structure
 
@@ -71,6 +71,8 @@ root/
 - [Sentence Bert](https://www.sbert.net)
 - Dropout & L2 Regularization
 - Model Ensemble
+
+- [Wrap-Up Report](https://github.com/boostcampaitech5/level1_semantictextsimilarity-nlp-02/blob/main/wrap_up_report/%EB%AC%B8%EC%9E%A5%20%EA%B0%84%20%EC%9C%A0%EC%82%AC%EB%8F%84%20%EC%B8%A1%EC%A0%95_NLP_%ED%8C%80%20%EB%A6%AC%ED%8F%AC%ED%8A%B8(02).pdf)
 
 ## 🐞Usage
 
