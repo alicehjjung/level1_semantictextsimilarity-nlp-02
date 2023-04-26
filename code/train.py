@@ -18,6 +18,7 @@ from module.seed import seed_everything
 from module.augmentation import augment
 from module.rdrop import r_augment
 from module.model_params import freezing, dropout_change
+from module.memo import memo
 from torch import nn
 from sklearn.model_selection import KFold
 
@@ -774,3 +775,11 @@ if __name__ == '__main__':
         test_pearson = trainer.test(model=model, datamodule=dataloader)
 
         torch.save(model, f'./output/model_{today[-5:]}_{test_pearson}.pt')
+
+        memo('./',
+            model_name=args.model_name,
+            batch_size=args.batch_size,
+            max_epoch=args.max_epoch,
+            lr=args.learning_rate,
+            seed=args.seed,
+            pearson=test_pearson)
