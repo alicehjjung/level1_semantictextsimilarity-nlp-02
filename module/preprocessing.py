@@ -161,17 +161,6 @@ def only_hangul(dataframe):
 
 if __name__ == '__main__':
     ## 맞춤법 csv파일 생성
-    """
-    new1 = pd.read_csv('./data/train.csv')
-    new2 = pd.read_csv('./data/train_translate.csv')
-
-    new1 = drop_marks(new1)
-    new2 = drop_marks(new2)
-
-    check_spell(new1).to_csv('./data/spelled_train.csv')
-    check_spell(new2).to_csv('./data/spelled_translate.csv')
-    """
-    '''
     train_df = pd.read_csv('./data/train.csv')
     dev_df = pd.read_csv('./data/dev.csv')
     test_df = pd.read_csv('./data/test.csv')
@@ -180,7 +169,3 @@ if __name__ == '__main__':
     check_spell(drop_marks(train_df)).to_csv('./data/pre_train.csv')
     check_spell(drop_marks(dev_df)).to_csv('./data/pre_dev.csv')
     check_spell(drop_marks(test_df)).to_csv('./data/pre_test.csv')
-    check_spell(train_df).to_csv('./data/spelled_train2.csv', sep=',')
-    check_spell(dev_df).to_csv('./data/spelled_dev2.csv', sep=',')
-    check_spell(test_df).to_csv('./data/spelled_test2.csv', sep=',')
-    '''
