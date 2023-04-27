@@ -1,3 +1,6 @@
+import sys, os
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+
 import argparse
 import pandas as pd
 from tqdm.auto import tqdm
@@ -122,7 +125,7 @@ class Dataloader(pl.LightningDataModule):
         predict_dataloader: 전처리된 Predict Data를 DataLoader로 변환해주는 함수
     """
     def __init__(self, model_name, batch_size, shuffle, train_path, dev_path, test_path, predict_path, 
-                 do_drop_marks, do_check_spell, do_sampler, do_augmentation, do_rdrop, do_sbert, do_kfold, seed_value, k=0, max_length=160):
+                 do_drop_marks, do_check_spell, do_sampler, do_augmentation, do_rdrop, do_sbert, do_kfold, seed_value, num_splits=0, k=0, max_length=160):
         """
         DataLoader Class 초기화 함수
 
@@ -142,6 +145,7 @@ class Dataloader(pl.LightningDataModule):
             do_sbert (int): SBert를 사용하는지 여부
             do_kfold (int): K-Fold를 사용하는지 여부
             seed (int): 고정된 seed값
+            num_splits (int, default=0): 최대 K의 값
             k (int, default=0): K-Fold의 k값
             max_length (int, default=160): tokenizer의 최대 token 길이
         """
@@ -165,6 +169,7 @@ class Dataloader(pl.LightningDataModule):
         self.do_sbert = do_sbert
         self.do_kfold = do_kfold
         self.seed = seed_value
+        self.num_splits = num_splits
         self.k = k
         self.max_length = max_length
         self.tokenizer = transformers.AutoTokenizer.from_pretrained(model_name, max_length=self.max_length)
@@ -234,7 +239,7 @@ class Dataloader(pl.LightningDataModule):
         if self.do_check_spell:
             data = check_spell(data)
 
-        if self.do_rdrop:
+        if self.do_rdrop and is_train:
             inputs, attention_masks, token_type_ids, new_targets = r_augment(data, self.tokenizer, targets, self.max_length, self.do_augmentation)
             return inputs, attention_masks, token_type_ids, new_targets
         
@@ -301,7 +306,7 @@ class Dataloader(pl.LightningDataModule):
             stage (str, default='fit'): Train을 위한 Data인지 Test를 위한 데이터인지 확인
         """
         if stage == 'fit':
-            train_data = pd.read_csv(self.train_path, index_col=0)
+            train_data = pd.read_csv(self.train_path)
             val_data = pd.read_csv(self.dev_path)
 
             if self.do_kfold:
@@ -390,7 +395,8 @@ class Model(pl.LightningModule):
         do_param_freeze (int): Pretrained Bert 계열 model의 parameter를 freeze하는지 여부
         do_sbert (int): SBert를 사용하는지 여부
         do_label_smoothing (int): label smoothing을 사용하는지 여부
-        drop_out_prob (float, default=0.1): dropout의 probability
+        label_smoothing (flaot) : label smoothing 값
+        drop_out_prob (float): dropout의 probability
         plm (BertModel, RobertaModel, ElectraModel): 불러온 Pretrained model
         lstm (LSTM): LSTM 모델
         fc (Linear): Fully Connected Layer
@@ -398,6 +404,7 @@ class Model(pl.LightningModule):
         net (Sequential): Dropout, Linear, ReLU가 합쳐져 있는 Layer
         projection (Linear): Fully Connected Layer
         loss_func (MSELoss): 손실 함수
+        tokenizer (BertTokenizerFast): pretrained tokenizer
 
     Methods:
         __init__: 
@@ -409,7 +416,7 @@ class Model(pl.LightningModule):
         lr_lambda: 
         configure_optimizer: 
     """
-    def __init__(self, model_name, lr, max_epoch, do_lstm, do_rdrop, do_param_freeze, do_sbert, do_label_smoothing, drop_out_prob=0.1, remain_params=[], hidden_size=256):
+    def __init__(self, model_name, lr, max_epoch, do_lstm, do_rdrop, do_param_freeze, do_sbert, do_label_smoothing, label_smoothing, drop_out_prob=0.1, remain_params=[], hidden_size=256):
         """
         Model Class 초기화 함수
 
@@ -436,6 +443,7 @@ class Model(pl.LightningModule):
         self.do_param_freeze = do_param_freeze
         self.do_sbert = do_sbert
         self.do_label_smoothing = do_label_smoothing
+        self.label_smoothing = label_smoothing
         self.drop_out_prob = drop_out_prob
 
         if self.do_lstm:
@@ -446,6 +454,7 @@ class Model(pl.LightningModule):
         elif self.do_rdrop or self.do_sbert:
             self.plm = transformers.AutoModel.from_pretrained(model_name)
             if do_rdrop:
+                self.tokenizer = transformers.AutoTokenizer.from_pretrained(model_name)
                 self.net = nn.Sequential(
                     nn.Dropout(self.drop_out_prob),
                     nn.Linear(self.plm.config.hidden_size, self.plm.config.hidden_size),
@@ -477,7 +486,7 @@ class Model(pl.LightningModule):
         outputs = self.plm(x, attention_mask=attention_mask, token_type_ids=token_type_ids)
 
         if self.do_lstm:
-            outputs, _ = self.lstm(outputs['logits'])
+            outputs, _ = self.lstm(outputs.last_hidden_state)
             pooled_output = outputs.mean(dim=1)
             pooled_output = self.dropout(pooled_output)
             logits = self.fc(pooled_output)
@@ -495,7 +504,7 @@ class Model(pl.LightningModule):
             pooled_output = special_hs.view(batch_size, -1)
             logits = self.projection(pooled_output)
         elif self.do_sbert:
-            token_embeddings = outputs[0]
+            token_embeddings = outputs.last_hidden_state
             input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
 
             logits = torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
@@ -701,7 +710,6 @@ class Model(pl.LightningModule):
         # scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=self.lr_lambda)
         return [optimizer], [scheduler]
 
-
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
@@ -710,19 +718,20 @@ if __name__ == '__main__':
     parser.add_argument('--max_epoch', default=1, type=int)
     parser.add_argument('--shuffle', default=True)
     parser.add_argument('--learning_rate', default=3e-5, type=float)
-    parser.add_argument('--train_path', default='./data/pre_train.csv')
-    parser.add_argument('--dev_path', default='./data/pre_dev.csv')
-    parser.add_argument('--test_path', default='./data/pre_dev.csv')
-    parser.add_argument('--predict_path', default='./data/pre_test.csv')
-    parser.add_argument('--drop_marks', default=0, type=int)
+    parser.add_argument('--train_path', default='./../data/train.csv')
+    parser.add_argument('--dev_path', default='./../data/dev.csv')
+    parser.add_argument('--test_path', default='./../data/dev.csv')
+    parser.add_argument('--predict_path', default='./../data/test.csv')
+    parser.add_argument('--drop_marks', default=1, type=int)
     parser.add_argument('--check_spell', default=0, type=int)
-    parser.add_argument('--sampler', default=0, type=int)
+    parser.add_argument('--sampler', default=1, type=int)
     parser.add_argument('--augmentation', default=0, type=int)
     parser.add_argument('--lstm', default=0, type=int)
     parser.add_argument('--rdrop', default=0, type=int)
     parser.add_argument('--param_freeze', default=0, type=int)
     parser.add_argument('--sbert', default=0, type=int)
-    parser.add_argument('--label_smoothing', default=0, type=int)
+    parser.add_argument('--label_smoothing', default=1, type=int)
+    parser.add_argument('--label_smoothing_value', default=0.1, type=float)
     parser.add_argument('--kfold', default=0, type=int)
     parser.add_argument('--nums_fold', default=5, type=int)
     parser.add_argument('--dropout_prob', default=0.1, type=int)
@@ -737,9 +746,9 @@ if __name__ == '__main__':
     if args.kfold:
         for k in range(args.nums_fold):
             dataloader = Dataloader(args.model_name, args.batch_size, args.shuffle, args.train_path, args.dev_path,
-                            args.test_path, args.predict_path, args.drop_marks, args.check_spell, args.sampler, args.augmentation, args.rdrop, args.sbert, args.kfold, args.seed, args.max_length)
+                            args.test_path, args.predict_path, args.drop_marks, args.check_spell, args.sampler, args.augmentation, args.rdrop, args.sbert, args.kfold, args.seed, args.nums_fold, k, args.max_length)
             # TRAIN 
-            model = Model(args.model_name, args.learning_rate, args.max_epoch, args.lstm, args.rdrop, args.param_freeze, args.sbert, args.label_smoothing, args.dropout_prob, args.remain_params)
+            model = Model(args.model_name, args.learning_rate, args.max_epoch, args.lstm, args.rdrop, args.param_freeze, args.sbert, args.label_smoothing, args.label_smoothing_value, args.dropout_prob, args.remain_params)
     
             today = datetime.now(tz=timezone(timedelta(hours=9))).strftime('%Y%m%d_%H:%M')
             wandb_logger = WandbLogger(project="Final", name=f'{today}')
@@ -759,7 +768,7 @@ if __name__ == '__main__':
         dataloader = Dataloader(args.model_name, args.batch_size, args.shuffle, args.train_path, args.dev_path,
                             args.test_path, args.predict_path, args.drop_marks, args.check_spell, args.sampler, args.augmentation, args.rdrop, args.sbert, args.kfold, args.seed, args.max_length)
         # TRAIN 
-        model = Model(args.model_name, args.learning_rate, args.max_epoch, args.lstm, args.rdrop, args.param_freeze, args.sbert, args.label_smoothing, args.dropout_prob, args.remain_params)
+        model = Model(args.model_name, args.learning_rate, args.max_epoch, args.lstm, args.rdrop, args.param_freeze, args.sbert, args.label_smoothing, args.label_smoothing_value, args.dropout_prob, args.remain_params)
     
         today = datetime.now(tz=timezone(timedelta(hours=9))).strftime('%Y%m%d_%H:%M')
         wandb_logger = WandbLogger(project="Final", name=f'{today}')
