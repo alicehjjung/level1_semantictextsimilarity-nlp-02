@@ -752,9 +752,9 @@ if __name__ == '__main__':
                           log_every_n_steps=1, logger=wandb_logger,
                           callbacks=[lr_monitor, early_stop])
             trainer.fit(model=model, datamodule=dataloader)
-            test_pearson = trainer.test(model=model, datamodule=dataloader)
+            test_pearson = trainer.test(model=model, datamodule=dataloader)[0]['test_pearson']
 
-            torch.save(model, f'./output/model_{today[-5:]}_{test_pearson}.pt')
+            torch.save(model, f'./model_{today[-5:]}_{test_pearson}.pt')
     else:
         dataloader = Dataloader(args.model_name, args.batch_size, args.shuffle, args.train_path, args.dev_path,
                             args.test_path, args.predict_path, args.drop_marks, args.check_spell, args.sampler, args.augmentation, args.rdrop, args.sbert, args.kfold, args.seed, args.max_length)
@@ -772,11 +772,11 @@ if __name__ == '__main__':
                           log_every_n_steps=1, logger=wandb_logger,
                           callbacks=[lr_monitor, early_stop])
         trainer.fit(model=model, datamodule=dataloader)
-        test_pearson = trainer.test(model=model, datamodule=dataloader)
+        test_pearson = trainer.test(model=model, datamodule=dataloader)[0]['test_pearson']
 
-        torch.save(model, f'./output/model_{today[-5:]}_{test_pearson}.pt')
+        torch.save(model, f'./model_{today[-5:]}_{test_pearson}.pt')
 
-        memo('./',
+        memo('./memo.txt',
             model_name=args.model_name,
             batch_size=args.batch_size,
             max_epoch=args.max_epoch,
