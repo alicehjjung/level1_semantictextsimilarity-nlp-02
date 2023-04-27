@@ -730,7 +730,7 @@ if __name__ == '__main__':
     parser.add_argument('--rdrop', default=0, type=int)
     parser.add_argument('--param_freeze', default=0, type=int)
     parser.add_argument('--sbert', default=0, type=int)
-    parser.add_argument('--label_smoothing', default=, type=int)
+    parser.add_argument('--label_smoothing', default=0, type=int)
     parser.add_argument('--label_smoothing_value', default=0.1, type=float)
     parser.add_argument('--kfold', default=0, type=int)
     parser.add_argument('--nums_fold', default=5, type=int)
