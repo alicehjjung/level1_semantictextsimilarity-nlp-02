@@ -555,7 +555,7 @@ class Model(pl.LightningModule):
             
         elif self.do_label_smoothing:
             logits = self(x, attention_mask, token_type_ids)
-            labels = y.unsqueeze(1).to(torch.device("cuda:0"))
+            labels = y.to(torch.device("cuda:0"))
             
             smoothed_labels = ((1 - self.label_smoothing) * labels) + (self.label_smoothing / labels.shape[1])
             std_dev = torch.sqrt(torch.tensor(0.1, device=torch.device('cuda')))
@@ -599,7 +599,7 @@ class Model(pl.LightningModule):
             
         elif self.do_label_smoothing:
             logits = self(x, attention_mask, token_type_ids)
-            labels = y.unsqueeze(1).to(torch.device("cuda:0"))
+            labels = y.to(torch.device("cuda:0"))
             
             smoothed_labels = ((1 - self.label_smoothing) * labels) + (self.label_smoothing / labels.shape[1])
             std_dev = torch.sqrt(torch.tensor(0.1, device=torch.device('cuda')))
@@ -611,9 +611,9 @@ class Model(pl.LightningModule):
             logits = self(x, attention_mask, token_type_ids)
             loss = self.loss_func(logits, y.float())
 
-            self.log("val_loss", loss, prog_bar=True)
-            self.log("val_pearson", torchmetrics.functional.pearson_corrcoef(logits.squeeze(), y.squeeze()),\
-                     prog_bar=True, on_epoch=True)
+        self.log("val_loss", loss, prog_bar=True)
+        self.log("val_pearson", torchmetrics.functional.pearson_corrcoef(logits.squeeze(), y.squeeze()),\
+                    prog_bar=True, on_epoch=True)
 
         return loss
 
@@ -718,10 +718,10 @@ if __name__ == '__main__':
     parser.add_argument('--max_epoch', default=1, type=int)
     parser.add_argument('--shuffle', default=True)
     parser.add_argument('--learning_rate', default=3e-5, type=float)
-    parser.add_argument('--train_path', default='./../data/train.csv')
-    parser.add_argument('--dev_path', default='./../data/dev.csv')
-    parser.add_argument('--test_path', default='./../data/dev.csv')
-    parser.add_argument('--predict_path', default='./../data/test.csv')
+    parser.add_argument('--train_path', default='./data/train.csv')
+    parser.add_argument('--dev_path', default='./data/dev.csv')
+    parser.add_argument('--test_path', default='./data/dev.csv')
+    parser.add_argument('--predict_path', default='./data/test.csv')
     parser.add_argument('--drop_marks', default=1, type=int)
     parser.add_argument('--check_spell', default=0, type=int)
     parser.add_argument('--sampler', default=1, type=int)
@@ -730,7 +730,7 @@ if __name__ == '__main__':
     parser.add_argument('--rdrop', default=0, type=int)
     parser.add_argument('--param_freeze', default=0, type=int)
     parser.add_argument('--sbert', default=0, type=int)
-    parser.add_argument('--label_smoothing', default=1, type=int)
+    parser.add_argument('--label_smoothing', default=, type=int)
     parser.add_argument('--label_smoothing_value', default=0.1, type=float)
     parser.add_argument('--kfold', default=0, type=int)
     parser.add_argument('--nums_fold', default=5, type=int)
