@@ -1,4 +1,6 @@
 # level1_semantictextsimilarity-nlp-02
+[ENG](#ENG)   
+[한국어](#한국어)
 
 ## 🌱Members
 
@@ -7,9 +9,27 @@
 | --- | --- | --- | --- | --- |
 | [서가은](https://github.com/gaeun0112) | [서보성](https://github.com/Seoboseong) | [오원택](https://github.com/dnjdsxor21) | [이승우](https://github.com/OLAOOT) | [정효정](https://github.com/HYOJUNG08) |
 
+## ENG
+# Semantic Text Similarity(STS) project
+Semantic Textual Similarity (STS) is a task that measures the semantic similarity between pairs of texts. It is commonly used to evaluate how well a model captures the intimacy between two sentences or implements the semantic representation of a sentence. Through this project, we build an AI model to predict the similarity between two sentences from 0 to 5.
+
+## Getting Started
+
+To use this project, follow these steps:
+
+### Train and Test the Model
+```python
+# TRAIN
+python3 code/train.py
+
+# INFERENCE
+python3 code/inference.py
+```
+
+## 한국어
 ## 📎STS (Semantic Textual Similarity)
 
-> 부스트 캠프 AI-Tech 5기 NLP 트랙 Level1 경진대회 프로젝트입니다. Semanic Textual Similarity(STS)는 텍스트 쌍의 의미적 유사도를 측정하는 Task로 모델이 의미상 두 문장의 친밀도를 얼마나 잘 잡아내는지 또는 문장의 의미적 표현을 얼마나 잘 구현하는지 평가하는데 일반적으로 사용됩니다.
+> 부스트 캠프 AI-Tech 5기 NLP 트랙 Level1 경진대회 프로젝트입니다. Semantic Textual Similarity(STS)는 텍스트 쌍의 의미적 유사도를 측정하는 Task로 모델이 의미상 두 문장의 친밀도를 얼마나 잘 잡아내는지 또는 문장의 의미적 표현을 얼마나 잘 구현하는지 평가하는데 일반적으로 사용됩니다.
 > 
 
 ### Data (Private)
